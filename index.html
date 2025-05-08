@@ -54,20 +54,33 @@
             border-radius: 4px;
             margin: 10px 0;
         }
+        .check-state {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .check-state:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <button id="toggleButton" class="button off" onclick="toggleState()">OFF</button>
         <div class="status" id="status">Current Status: OFF</div>
+        <button class="check-state" onclick="checkCurrentState()">Check Current State</button>
         <div class="api-info">
-            <h3>API Endpoints:</h3>
+            <h3>Current State Information:</h3>
             <div class="api-example">
-                <p>Get current state:</p>
-                <code>GET /state.json</code>
-                <p>Example: <a href="/state.json" target="_blank">/state.json</a></p>
+                <p>Local Storage State: <span id="localStorageState">OFF</span></p>
+                <p>Button State: <span id="buttonState">OFF</span></p>
+                <p>Last Updated: <span id="lastUpdated">Never</span></p>
             </div>
-            <p>Current state: <span id="apiState">OFF</span></p>
         </div>
     </div>
 
@@ -79,38 +92,47 @@
             buttonState = !buttonState;
             localStorage.setItem('buttonState', buttonState);
             updateButtonState(buttonState);
+            updateLastUpdated();
+        }
+
+        function checkCurrentState() {
+            const currentState = localStorage.getItem('buttonState') === 'true';
+            updateButtonState(currentState);
+            updateLastUpdated();
         }
 
         function updateButtonState(state) {
             const button = document.getElementById('toggleButton');
             const status = document.getElementById('status');
-            const apiState = document.getElementById('apiState');
+            const localStorageState = document.getElementById('localStorageState');
+            const buttonStateDisplay = document.getElementById('buttonState');
             
             if (state) {
                 button.className = 'button on';
                 button.textContent = 'ON';
                 status.textContent = 'Current Status: ON';
-                apiState.textContent = 'ON';
+                localStorageState.textContent = 'ON';
+                buttonStateDisplay.textContent = 'ON';
             } else {
                 button.className = 'button off';
                 button.textContent = 'OFF';
                 status.textContent = 'Current Status: OFF';
-                apiState.textContent = 'OFF';
+                localStorageState.textContent = 'OFF';
+                buttonStateDisplay.textContent = 'OFF';
             }
+        }
+
+        function updateLastUpdated() {
+            const now = new Date();
+            document.getElementById('lastUpdated').textContent = now.toLocaleString();
         }
 
         // Initialize button state on page load
         updateButtonState(buttonState);
+        updateLastUpdated();
 
-        // Fetch state from state.json
-        fetch('/state.json')
-            .then(response => response.json())
-            .then(data => {
-                buttonState = data.state;
-                localStorage.setItem('buttonState', buttonState);
-                updateButtonState(buttonState);
-            })
-            .catch(error => console.log('Error fetching state:', error));
+        // Check state every 5 seconds
+        setInterval(checkCurrentState, 5000);
     </script>
 </body>
 </html> 
