@@ -110,7 +110,7 @@
                 });
                 const data = await response.json();
                 console.log('Airtable response:', data);
-                return data.fields.Status === true; // Explicitly check for boolean true
+                return data.fields.Status === "ON"; // Check for "ON" string
             } catch (error) {
                 console.error('Error fetching state:', error);
                 document.getElementById('error').style.display = 'block';
@@ -128,13 +128,13 @@
                     },
                     body: JSON.stringify({
                         fields: {
-                            Status: Boolean(newState) // Convert to boolean
+                            Status: newState ? "ON" : "OFF" // Convert boolean to "ON"/"OFF" string
                         }
                     })
                 });
                 const data = await response.json();
                 console.log('Airtable update response:', data);
-                return data.fields.Status === true; // Explicitly check for boolean true
+                return data.fields.Status === "ON"; // Check for "ON" string
             } catch (error) {
                 console.error('Error updating state:', error);
                 document.getElementById('error').style.display = 'block';
