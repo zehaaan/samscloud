@@ -41,17 +41,56 @@
             font-size: 18px;
             color: #333;
         }
+        .api-info {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <button id="toggleButton" class="button off" onclick="toggleState()">OFF</button>
         <div class="status" id="status">Current Status: OFF</div>
+        <div class="api-info">
+            <h3>API Endpoints:</h3>
+            <p>Get current state: <code>GET /api/state</code></p>
+            <p>Toggle state: <code>POST /api/toggle</code></p>
+            <p>Current state: <span id="apiState">OFF</span></p>
+        </div>
     </div>
 
     <script>
         // Initialize state from localStorage or default to false
         let buttonState = localStorage.getItem('buttonState') === 'true';
+
+        // Function to handle API requests
+        function handleRequest(request) {
+            if (request.url.endsWith('/api/state')) {
+                return new Response(JSON.stringify({ state: buttonState }), {
+                    headers: { 'Content-Type': 'application/json' }
+                });
+            } else if (request.url.endsWith('/api/toggle') && request.method === 'POST') {
+                buttonState = !buttonState;
+                localStorage.setItem('buttonState', buttonState);
+                updateButtonState(buttonState);
+                return new Response(JSON.stringify({ state: buttonState }), {
+                    headers: { 'Content-Type': 'application/json' }
+                });
+            }
+            return new Response('Not Found', { status: 404 });
+        }
+
+        // Register service worker for API handling
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').then(registration => {
+                console.log('ServiceWorker registration successful');
+            }).catch(err => {
+                console.log('ServiceWorker registration failed: ', err);
+            });
+        }
 
         function toggleState() {
             buttonState = !buttonState;
@@ -62,15 +101,18 @@
         function updateButtonState(state) {
             const button = document.getElementById('toggleButton');
             const status = document.getElementById('status');
+            const apiState = document.getElementById('apiState');
             
             if (state) {
                 button.className = 'button on';
                 button.textContent = 'ON';
                 status.textContent = 'Current Status: ON';
+                apiState.textContent = 'ON';
             } else {
                 button.className = 'button off';
                 button.textContent = 'OFF';
                 status.textContent = 'Current Status: OFF';
+                apiState.textContent = 'OFF';
             }
         }
 
