@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ON/OFF Button</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5;
+        }
+        .container {
+            text-align: center;
+        }
+        .button {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            border: none;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .button.off {
+            background-color: #ff4444;
+            color: white;
+        }
+        .button.on {
+            background-color: #00C851;
+            color: white;
+        }
+        .status {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button id="toggleButton" class="button off" onclick="toggleState()">OFF</button>
+        <div class="status" id="status">Current Status: OFF</div>
+    </div>
+
+    <script>
+        // Initialize state from localStorage or default to false
+        let buttonState = localStorage.getItem('buttonState') === 'true';
+
+        function toggleState() {
+            buttonState = !buttonState;
+            localStorage.setItem('buttonState', buttonState);
+            updateButtonState(buttonState);
+        }
+
+        function updateButtonState(state) {
+            const button = document.getElementById('toggleButton');
+            const status = document.getElementById('status');
+            
+            if (state) {
+                button.className = 'button on';
+                button.textContent = 'ON';
+                status.textContent = 'Current Status: ON';
+            } else {
+                button.className = 'button off';
+                button.textContent = 'OFF';
+                status.textContent = 'Current Status: OFF';
+            }
+        }
+
+        // Initialize button state on page load
+        updateButtonState(buttonState);
+    </script>
+</body>
+</html> 
