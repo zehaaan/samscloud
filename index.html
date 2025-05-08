@@ -67,6 +67,11 @@
         .check-state:hover {
             background-color: #0056b3;
         }
+        .error {
+            color: #dc3545;
+            margin-top: 10px;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -74,51 +79,102 @@
         <button id="toggleButton" class="button off" onclick="toggleState()">OFF</button>
         <div class="status" id="status">Current Status: OFF</div>
         <button class="check-state" onclick="checkCurrentState()">Check Current State</button>
+        <div class="error" id="error">Error: Could not connect to Airtable</div>
         <div class="api-info">
             <h3>State Information:</h3>
             <div class="api-example">
-                <p>Local Storage State: <span id="localStorageState">OFF</span></p>
+                <p>Airtable State: <span id="airtableState">OFF</span></p>
                 <p>Button State: <span id="buttonState">OFF</span></p>
                 <p>Last Updated: <span id="lastUpdated">Never</span></p>
-                <p><small>Note: The state is stored in your browser's localStorage. Each browser/device will have its own state.</small></p>
             </div>
         </div>
     </div>
 
     <script>
-        // Initialize state from localStorage or default to false
-        let buttonState = localStorage.getItem('buttonState') === 'true';
+        // Airtable configuration
+        const AIRTABLE_API_KEY = 'patOksKrAelStBPbA.baccd966a724c2e5cd16e4835ac218a46fcce7ba2bff28a81d896b7b183de926';
+        const AIRTABLE_BASE_ID = 'app8kNkbehwjtVP2Z';
+        const AIRTABLE_TABLE_NAME = 'tblZMnhV9wYq6zlxR';
+        const AIRTABLE_RECORD_ID = 'recPvqMnDlO9Dfhyr';
 
-        function toggleState() {
-            buttonState = !buttonState;
-            localStorage.setItem('buttonState', buttonState);
-            updateButtonState(buttonState);
-            updateLastUpdated();
+        // Initialize state
+        let buttonState = false;
+
+        async function getStateFromAirtable() {
+            try {
+                const response = await fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_NAME}/${AIRTABLE_RECORD_ID}`, {
+                    headers: {
+                        'Authorization': `Bearer ${AIRTABLE_API_KEY}`
+                    }
+                });
+                const data = await response.json();
+                return data.fields.state;
+            } catch (error) {
+                console.error('Error fetching state:', error);
+                document.getElementById('error').style.display = 'block';
+                return false;
+            }
         }
 
-        function checkCurrentState() {
-            const currentState = localStorage.getItem('buttonState') === 'true';
-            updateButtonState(currentState);
-            updateLastUpdated();
+        async function updateStateInAirtable(newState) {
+            try {
+                const response = await fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_NAME}/${AIRTABLE_RECORD_ID}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        fields: {
+                            state: newState
+                        }
+                    })
+                });
+                const data = await response.json();
+                return data.fields.state;
+            } catch (error) {
+                console.error('Error updating state:', error);
+                document.getElementById('error').style.display = 'block';
+                return false;
+            }
+        }
+
+        async function toggleState() {
+            buttonState = !buttonState;
+            const newState = await updateStateInAirtable(buttonState);
+            if (newState !== null) {
+                buttonState = newState;
+                updateButtonState(buttonState);
+                updateLastUpdated();
+            }
+        }
+
+        async function checkCurrentState() {
+            const currentState = await getStateFromAirtable();
+            if (currentState !== null) {
+                buttonState = currentState;
+                updateButtonState(buttonState);
+                updateLastUpdated();
+            }
         }
 
         function updateButtonState(state) {
             const button = document.getElementById('toggleButton');
             const status = document.getElementById('status');
-            const localStorageState = document.getElementById('localStorageState');
+            const airtableState = document.getElementById('airtableState');
             const buttonStateDisplay = document.getElementById('buttonState');
             
             if (state) {
                 button.className = 'button on';
                 button.textContent = 'ON';
                 status.textContent = 'Current Status: ON';
-                localStorageState.textContent = 'ON';
+                airtableState.textContent = 'ON';
                 buttonStateDisplay.textContent = 'ON';
             } else {
                 button.className = 'button off';
                 button.textContent = 'OFF';
                 status.textContent = 'Current Status: OFF';
-                localStorageState.textContent = 'OFF';
+                airtableState.textContent = 'OFF';
                 buttonStateDisplay.textContent = 'OFF';
             }
         }
@@ -129,8 +185,7 @@
         }
 
         // Initialize button state on page load
-        updateButtonState(buttonState);
-        updateLastUpdated();
+        checkCurrentState();
 
         // Check state every 5 seconds
         setInterval(checkCurrentState, 5000);
