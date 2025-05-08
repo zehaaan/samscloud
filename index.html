@@ -48,6 +48,12 @@
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
+        .api-example {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
     </style>
 </head>
 <body>
@@ -56,8 +62,16 @@
         <div class="status" id="status">Current Status: OFF</div>
         <div class="api-info">
             <h3>API Endpoints:</h3>
-            <p>Get current state: <code>GET /api/state</code></p>
-            <p>Toggle state: <code>POST /api/toggle</code></p>
+            <div class="api-example">
+                <p>Get current state:</p>
+                <code>GET /api/state</code>
+                <p>Example: <a href="/api/state" target="_blank">/api/state</a></p>
+            </div>
+            <div class="api-example">
+                <p>Toggle state:</p>
+                <code>GET /api/toggle</code>
+                <p>Example: <a href="/api/toggle" target="_blank">/api/toggle</a></p>
+            </div>
             <p>Current state: <span id="apiState">OFF</span></p>
         </div>
     </div>
@@ -72,7 +86,7 @@
                 return new Response(JSON.stringify({ state: buttonState }), {
                     headers: { 'Content-Type': 'application/json' }
                 });
-            } else if (request.url.endsWith('/api/toggle') && request.method === 'POST') {
+            } else if (request.url.endsWith('/api/toggle')) {
                 buttonState = !buttonState;
                 localStorage.setItem('buttonState', buttonState);
                 updateButtonState(buttonState);

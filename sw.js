@@ -10,7 +10,7 @@ async function handleRequest(request) {
         return new Response(JSON.stringify({ state }), {
             headers: { 'Content-Type': 'application/json' }
         });
-    } else if (request.url.endsWith('/api/toggle') && request.method === 'POST') {
+    } else if (request.url.endsWith('/api/toggle')) {
         const currentState = localStorage.getItem('buttonState') === 'true';
         const newState = !currentState;
         localStorage.setItem('buttonState', newState);
