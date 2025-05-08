@@ -109,7 +109,8 @@
                     }
                 });
                 const data = await response.json();
-                return data.fields.state;
+                console.log('Airtable response:', data); // Debug log
+                return data.fields.Status; // Changed from 'state' to 'Status'
             } catch (error) {
                 console.error('Error fetching state:', error);
                 document.getElementById('error').style.display = 'block';
@@ -127,12 +128,13 @@
                     },
                     body: JSON.stringify({
                         fields: {
-                            state: newState
+                            Status: newState // Changed from 'state' to 'Status'
                         }
                     })
                 });
                 const data = await response.json();
-                return data.fields.state;
+                console.log('Airtable update response:', data); // Debug log
+                return data.fields.Status; // Changed from 'state' to 'Status'
             } catch (error) {
                 console.error('Error updating state:', error);
                 document.getElementById('error').style.display = 'block';
